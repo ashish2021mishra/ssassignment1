@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d47c1d97-aa6b-4f44-af40-58ba91a8b9cc" >
+		<http:listener-connection host="0.0.0.0" port="8083" />
+	</http:listener-config>
+	<flow name="studentaccountsapiFlow" doc:id="096729a4-9816-4946-957e-2b38313ceee9" >
+		<http:listener doc:name="Listener" doc:id="ec945e41-bd9f-48a8-b5b3-b43da642265d" config-ref="HTTP_Listener_config" path="/api/accountCreationSAPI" allowedMethods="POST"/>
+		<ee:transform doc:name="Transform Message" doc:id="b698bac5-54cc-4364-84df-7e51af8f53e7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "accountID": payload.accountID,
+  "name": payload.name,
+  "fatherName": payload.fatherName,
+  "motherName": payload.motherName,
+  "lastName": payload.lastName,
+  "dateOfBirth": payload.dateOfBirth,
+  "address": payload.address,
+  "fatherContactNumber": payload.fatherContactNumber,
+  "motherContactNumber": payload.motherContactNumber,
+  "accountCreationDate": payload.accountCreationDate,
+  "accountCreatedBy": payload.accountCreationDate
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request" doc:id="e8552f2a-6a15-4a01-bd95-4f8ba7ee1ba7" url="https://parseapi.back4app.com/classes/Student">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"X-Parse-Application-Id" : "flqNMSQHTd3zTQHR8CIaqCypPft1rk8GzwjiumRW",
+	"X-Parse-REST-API-Key" : "Y1kJEC9P4mB5YHLD1HF4BQmmjRqM1XfnFxsq33TC",
+	"Content-Type" : "application/json"
+}]]]></http:headers>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="0e9929e3-766c-4284-8ebe-34f6e359294a">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "account created"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
